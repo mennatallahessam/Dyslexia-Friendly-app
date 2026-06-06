@@ -154,6 +154,36 @@ watch(() => store.showInspector, (newVal) => {
           </div>
         </section>
 
+        <!-- Word Highlighting -->
+        <section class="word-highlighting">
+          <h4>Highlight Color</h4>
+          <p class="info-desc">Color-code this word to track it more easily in the text.</p>
+          <div class="highlight-colors-list">
+            <button 
+              v-for="color in [
+                { name: 'Yellow', value: 'rgba(253, 224, 71, 0.4)', border: '#eab308' },
+                { name: 'Green', value: 'rgba(110, 231, 183, 0.4)', border: '#10b981' },
+                { name: 'Pink', value: 'rgba(244, 63, 94, 0.35)', border: '#f43f5e' },
+                { name: 'Blue', value: 'rgba(125, 211, 252, 0.4)', border: '#0ea5e9' }
+              ]"
+              :key="color.name"
+              @click="store.highlightWord(store.inspectedWord, color.value)"
+              class="highlight-color-bubble"
+              :style="{ backgroundColor: color.value, borderColor: color.border }"
+              :class="{ active: store.highlightedWords[store.inspectedWord.toLowerCase()] === color.value }"
+              :title="`Highlight word in ${color.name}`"
+            ></button>
+            <button 
+              @click="store.highlightWord(store.inspectedWord, 'clear')"
+              class="highlight-clear-bubble"
+              title="Clear Highlight"
+              v-if="store.highlightedWords[store.inspectedWord.toLowerCase()]"
+            >
+              Clear
+            </button>
+          </div>
+        </section>
+
         <!-- Settings & TTS Controls -->
         <section class="inspector-controls">
           <div class="tts-section">
@@ -416,5 +446,57 @@ watch(() => store.showInspector, (newVal) => {
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
+}
+
+.word-highlighting {
+  margin-bottom: 2rem;
+}
+
+.word-highlighting h4 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.highlight-colors-list {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.highlight-color-bubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.highlight-color-bubble:hover {
+  transform: scale(1.15);
+}
+
+.highlight-color-bubble.active {
+  border-color: var(--text-color) !important;
+  transform: scale(1.1);
+}
+
+.highlight-clear-bubble {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.highlight-clear-bubble:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
 </style>

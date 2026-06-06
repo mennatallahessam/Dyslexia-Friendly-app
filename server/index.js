@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +11,29 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+
+// Configure multer (in-memory storage)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// PDF Text Extraction Route
+app.post('/api/extract-pdf', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send({ error: 'No file uploaded' });
+    }
+
+    const data = await pdfParse(req.file.buffer);
+    res.json({
+      text: data.text,
+      pages: data.numpages,
+      info: data.info
+    });
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    res.status(500).send({ error: 'Failed to extract text from PDF file.' });
+  }
+});
 
 // Mock data for dyslexia-friendly reading
 const accessibleArticles = [

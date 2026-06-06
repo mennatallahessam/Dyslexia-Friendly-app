@@ -6,8 +6,9 @@ import ReadingRuler from './components/ReadingRuler.vue';
 import ArticleCard from './components/ArticleCard.vue';
 import WordInspector from './components/WordInspector.vue';
 import PhonicsGame from './components/PhonicsGame.vue';
+import PdfReader from './components/PdfReader.vue';
 import { useSettingsStore } from './stores/settings';
-import { Sparkles, Mic, MicOff, Trash2, BookOpen, GraduationCap } from 'lucide-vue-next';
+import { Sparkles, Mic, MicOff, Trash2, BookOpen, GraduationCap, FileText } from 'lucide-vue-next';
 
 interface Article {
   id: number;
@@ -106,6 +107,14 @@ const clearNote = () => {
             <GraduationCap :size="18" />
             <span>Phonics Game</span>
           </button>
+          <button 
+            @click="store.setActiveTab('pdf')" 
+            class="nav-tab-btn" 
+            :class="{ active: store.activeTab === 'pdf' }"
+          >
+            <FileText :size="18" />
+            <span>PDF Reader</span>
+          </button>
         </div>
       </div>
     </header>
@@ -149,6 +158,10 @@ const clearNote = () => {
               :article="article" 
             />
           </div>
+        </div>
+        
+        <div v-else-if="store.activeTab === 'pdf'">
+          <PdfReader />
         </div>
         
         <div v-else>

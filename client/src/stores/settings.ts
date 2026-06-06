@@ -16,10 +16,12 @@ export const useSettingsStore = defineStore('settings', {
     letterSpacing: 0,
     wordSpacing: 0,
     bionicReading: false,
-    activeTab: 'reader', // reader, phonics
+    activeTab: 'reader', // reader, phonics, pdf
     isSpeaking: false,
     inspectedWord: '',
-    showInspector: false
+    showInspector: false,
+    pdfText: '',
+    highlightedWords: {} as Record<string, string>
   }),
   actions: {
     setTheme(theme: string) {
@@ -81,7 +83,7 @@ export const useSettingsStore = defineStore('settings', {
     toggleBionicReading() {
       this.bionicReading = !this.bionicReading;
     },
-    setActiveTab(tab: 'reader' | 'phonics') {
+    setActiveTab(tab: 'reader' | 'phonics' | 'pdf') {
       this.activeTab = tab;
     },
     openWordInspector(word: string) {
@@ -95,6 +97,21 @@ export const useSettingsStore = defineStore('settings', {
     closeWordInspector() {
       this.showInspector = false;
       this.inspectedWord = '';
+    },
+    setPdfText(text: string) {
+      this.pdfText = text;
+    },
+    highlightWord(word: string, color: string) {
+      const cleanWord = word.toLowerCase().trim();
+      if (!cleanWord) return;
+      
+      const newHighlights = { ...this.highlightedWords };
+      if (color === 'clear') {
+        delete newHighlights[cleanWord];
+      } else {
+        newHighlights[cleanWord] = color;
+      }
+      this.highlightedWords = newHighlights;
     },
     speak(text: string) {
       if ('speechSynthesis' in window) {

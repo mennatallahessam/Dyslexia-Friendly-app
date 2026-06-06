@@ -79,6 +79,7 @@ const bionicFormat = (word: string) => {
           v-if="token.isWord" 
           class="word-interactive" 
           @click="store.openWordInspector(token.raw)"
+          :style="{ backgroundColor: store.highlightedWords[token.text.toLowerCase()] }"
         >
           <span v-if="store.bionicReading" v-html="bionicFormat(token.text)"></span>
           <span v-else>{{ token.text }}</span>
