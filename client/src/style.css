@@ -1,5 +1,6 @@
 @import url('https://fonts.cdnfonts.com/css/opendyslexic');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
 
 :root {
   /* Default Theme (Light/White) */
@@ -13,6 +14,7 @@
   --font-main: 'Outfit', sans-serif;
   
   /* Dyslexia Settings */
+  --font-size: 18px;
   --letter-spacing: normal;
   --word-spacing: normal;
   --line-height: 1.6;
@@ -46,6 +48,17 @@
   --font-main: 'OpenDyslexic', sans-serif !important;
 }
 
+/* Font Classes */
+.font-outfit {
+  --font-main: 'Outfit', sans-serif !important;
+}
+.font-opendyslexic {
+  --font-main: 'OpenDyslexic', sans-serif !important;
+}
+.font-comic {
+  --font-main: 'Comic Neue', 'Comic Sans MS', cursive !important;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -57,6 +70,7 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   font-family: var(--font-main);
+  font-size: var(--font-size);
   line-height: var(--line-height);
   letter-spacing: var(--letter-spacing);
   word-spacing: var(--word-spacing);
@@ -94,8 +108,6 @@ h1, h2, h3 {
   position: fixed;
   left: 0;
   width: 100%;
-  height: 40px;
-  background: var(--ruler-color);
   pointer-events: none;
   z-index: 1000;
   border-top: 2px solid var(--primary-color);
@@ -106,6 +118,54 @@ h1, h2, h3 {
 
 .reading-ruler.active {
   display: block;
+}
+
+/* Focus Mask Classes */
+.focus-mask-top, .focus-mask-bottom {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  z-index: 999;
+}
+.focus-mask-top {
+  top: 0;
+}
+.focus-mask-bottom {
+  bottom: 0;
+}
+.focus-mask-highlight {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  border-top: 2px solid var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+/* Interactive Words */
+.word-interactive {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 1px;
+  display: inline-block;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.word-interactive:hover {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--primary-color);
+}
+.theme-dark .word-interactive:hover {
+  background-color: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
+/* Bionic styles */
+.bionic-prefix {
+  font-weight: 800 !important;
 }
 
 /* Animations */
