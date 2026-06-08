@@ -1,6 +1,7 @@
 @import url('https://fonts.cdnfonts.com/css/opendyslexic');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* Default Theme (Light/White) */
@@ -44,6 +45,14 @@
   --toolbar-bg: rgba(15, 23, 42, 0.9);
 }
 
+/* Custom Contrast Theme */
+.theme-custom {
+  --bg-color: var(--custom-bg, #fdfdf5);
+  --text-color: var(--custom-text, #2c2c2c);
+  --card-bg: color-mix(in srgb, var(--custom-bg, #fdfdf5) 92%, var(--custom-text, #2c2c2c) 8%);
+  --toolbar-bg: color-mix(in srgb, var(--custom-bg, #fdfdf5) 85%, transparent 15%);
+}
+
 .use-dyslexic-font {
   --font-main: 'OpenDyslexic', sans-serif !important;
 }
@@ -57,6 +66,9 @@
 }
 .font-comic {
   --font-main: 'Comic Neue', 'Comic Sans MS', cursive !important;
+}
+.font-lexend {
+  --font-main: 'Lexend', sans-serif !important;
 }
 
 * {
@@ -161,6 +173,17 @@ h1, h2, h3 {
 .theme-dark .word-interactive:hover {
   background-color: rgba(99, 102, 241, 0.3);
   color: #a5b4fc;
+}
+.word-interactive.speaking-word {
+  background-color: rgba(99, 102, 241, 0.22) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+  border-bottom: 2px solid var(--primary-color);
+  border-radius: 2px;
+}
+.theme-dark .word-interactive.speaking-word {
+  background-color: rgba(165, 180, 252, 0.28) !important;
+  box-shadow: 0 0 0 2px rgba(165, 180, 252, 0.12);
+  border-bottom: 2px solid #a5b4fc;
 }
 
 /* Bionic styles */

@@ -16,6 +16,8 @@ interface TextToken {
   text: string;
   raw: string;
   isWord: boolean;
+  startIndex: number;
+  endIndex: number;
 }
 
 const parsedWords = computed<TextToken[]>(() => {
@@ -24,12 +26,18 @@ const parsedWords = computed<TextToken[]>(() => {
   
   // Split on boundaries: words, punctuation, spaces
   const tokens = text.split(/([a-zA-Z0-9']+|[^a-zA-Z0-9'\s]+|\s+)/);
+  let charIndex = 0;
   return tokens.filter(t => t).map(t => {
     const isWord = /^[a-zA-Z0-9']+$/.test(t);
+    const startIndex = charIndex;
+    const endIndex = charIndex + t.length;
+    charIndex = endIndex;
     return {
       text: t,
       raw: t,
-      isWord
+      isWord,
+      startIndex,
+      endIndex
     };
   });
 });
@@ -190,6 +198,7 @@ const clearPdf = () => {
           <span 
             v-if="token.isWord" 
             class="word-interactive" 
+            :class="{ 'speaking-word': store.isSpeaking && store.speakingText === store.pdfText && store.speakingCharIndex >= token.startIndex && store.speakingCharIndex < token.endIndex }"
             @click="store.openWordInspector(token.raw)"
             :style="{ backgroundColor: store.highlightedWords[token.text.toLowerCase()] }"
           >

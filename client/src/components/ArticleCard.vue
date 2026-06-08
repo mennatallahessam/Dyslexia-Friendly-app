@@ -18,7 +18,7 @@ const toggleSpeech = () => {
   if (store.isSpeaking) {
     store.stopSpeaking();
   } else {
-    store.speak(`${props.article.title}. ${props.article.content}`);
+    store.speak(props.article.content);
   }
 };
 
@@ -27,6 +27,8 @@ interface TextToken {
   text: string;
   raw: string;
   isWord: boolean;
+  startIndex: number;
+  endIndex: number;
 }
 
 const parsedWords = computed<TextToken[]>(() => {
@@ -35,13 +37,19 @@ const parsedWords = computed<TextToken[]>(() => {
   
   // Split on boundaries: words, punctuation, spaces
   const tokens = text.split(/([a-zA-Z0-9']+|[^a-zA-Z0-9'\s]+|\s+)/);
+  let charIndex = 0;
   return tokens.filter(t => t).map(t => {
     // Simple alpha-numeric check to determine if it is inspectable
     const isWord = /^[a-zA-Z0-9']+$/.test(t);
+    const startIndex = charIndex;
+    const endIndex = charIndex + t.length;
+    charIndex = endIndex;
     return {
       text: t,
       raw: t,
-      isWord
+      isWord,
+      startIndex,
+      endIndex
     };
   });
 });
@@ -65,10 +73,10 @@ const bionicFormat = (word: string) => {
   <div class="card fade-in" :class="`font-${store.fontFamily}`">
     <div class="card-header">
       <span class="category">{{ article.category }}</span>
-      <button @click="toggleSpeech" class="tts-button" :class="{ speaking: store.isSpeaking }">
-        <Volume2 v-if="!store.isSpeaking" :size="20" />
+      <button @click="toggleSpeech" class="tts-button" :class="{ speaking: store.isSpeaking && store.speakingText === article.content }">
+        <Volume2 v-if="!(store.isSpeaking && store.speakingText === article.content)" :size="20" />
         <Square v-else :size="20" />
-        {{ store.isSpeaking ? 'Stop Reading' : 'Read Aloud' }}
+        {{ store.isSpeaking && store.speakingText === article.content ? 'Stop Reading' : 'Read Aloud' }}
       </button>
     </div>
     <h2>{{ article.title }}</h2>
@@ -78,6 +86,7 @@ const bionicFormat = (word: string) => {
         <span 
           v-if="token.isWord" 
           class="word-interactive" 
+          :class="{ 'speaking-word': store.isSpeaking && store.speakingText === article.content && store.speakingCharIndex >= token.startIndex && store.speakingCharIndex < token.endIndex }"
           @click="store.openWordInspector(token.raw)"
           :style="{ backgroundColor: store.highlightedWords[token.text.toLowerCase()] }"
         >

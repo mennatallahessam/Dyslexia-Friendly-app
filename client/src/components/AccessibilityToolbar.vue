@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { useSettingsStore } from '../stores/settings';
 import { 
   Type, 
@@ -12,14 +13,87 @@ import {
   Space,
   Eye,
   EyeOff,
-  AlignJustify
+  AlignJustify,
+  Palette
 } from 'lucide-vue-next';
 
 const store = useSettingsStore();
+
+const customBg = ref(store.customBgColor);
+const customText = ref(store.customTextColor);
+
+const updateCustomColors = () => {
+  store.setCustomColors(customBg.value, customText.value);
+};
+
+const selectPresetBg = (bg: string) => {
+  customBg.value = bg;
+  updateCustomColors();
+};
+
+const selectPresetText = (txt: string) => {
+  customText.value = txt;
+  updateCustomColors();
+};
+
+watch(() => store.customBgColor, (newBg) => {
+  customBg.value = newBg;
+});
+
+watch(() => store.customTextColor, (newTxt) => {
+  customText.value = newTxt;
+});
 </script>
 
 <template>
   <div class="toolbar-wrapper">
+    <!-- Sliding Custom Theme Panel -->
+    <Transition name="slide-up">
+      <div v-if="store.theme === 'custom'" class="ruler-sub-toolbar custom-theme-sub-toolbar">
+        <div class="toolbar-group colors-group">
+          <span class="label-txt">BG:</span>
+          <input 
+            type="color" 
+            v-model="customBg" 
+            @input="updateCustomColors"
+            class="color-picker-input" 
+            title="Custom Background Color"
+          />
+          <button 
+            v-for="bg in ['#fdfdf5', '#fee2e2', '#ffedd5', '#f0fdf4', '#ecfeff']" 
+            :key="bg" 
+            @click="selectPresetBg(bg)"
+            class="preset-dot"
+            :style="{ backgroundColor: bg }"
+            :class="{ active: store.customBgColor === bg }"
+            title="Select preset background"
+          ></button>
+        </div>
+        
+        <div class="sub-divider"></div>
+        
+        <div class="toolbar-group colors-group">
+          <span class="label-txt">Text:</span>
+          <input 
+            type="color" 
+            v-model="customText" 
+            @input="updateCustomColors"
+            class="color-picker-input" 
+            title="Custom Text Color"
+          />
+          <button 
+            v-for="text in ['#1e293b', '#1c1917', '#064e3b', '#0c4a6e', '#581c87']" 
+            :key="text" 
+            @click="selectPresetText(text)"
+            class="preset-dot text-preset"
+            :style="{ backgroundColor: text }"
+            :class="{ active: store.customTextColor === text }"
+            title="Select preset text color"
+          ></button>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Sliding Ruler Customizer Sub-toolbar -->
     <Transition name="slide-up">
       <div v-if="store.showRuler" class="ruler-sub-toolbar">
@@ -98,6 +172,14 @@ const store = useSettingsStore();
         >
           Comic
         </button>
+        <button 
+          @click="store.setFontFamily('lexend')" 
+          :class="{ active: store.fontFamily === 'lexend' }"
+          class="font-btn"
+          title="Lexend Fluency Font"
+        >
+          Lexend
+        </button>
       </div>
 
       <div class="divider"></div>
@@ -148,6 +230,9 @@ const store = useSettingsStore();
         </button>
         <button @click="store.setTheme('dark')" :class="{ active: store.theme === 'dark' }" class="theme-btn dark-theme" title="Dark Theme">
           <Moon :size="18" />
+        </button>
+        <button @click="store.setTheme('custom')" :class="{ active: store.theme === 'custom' }" class="theme-btn custom-theme-btn" title="Custom Filter Theme">
+          <Palette :size="18" />
         </button>
       </div>
 
@@ -353,6 +438,57 @@ button.active {
   height: 32px;
   padding: 0;
   justify-content: center;
+}
+
+/* Custom theme color pickers */
+.color-picker-input {
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.color-picker-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.preset-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.preset-dot:hover {
+  transform: scale(1.2);
+}
+
+.preset-dot.active {
+  border: 2px solid var(--primary-color);
+  transform: scale(1.1);
+}
+
+.custom-theme-btn {
+  background: linear-gradient(135deg, #fca5a5, #fde047, #86efac, #93c5fd);
+  border: 2px solid transparent;
+}
+
+.custom-theme-btn.active {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
 }
 
 /* Slide Up Transition */

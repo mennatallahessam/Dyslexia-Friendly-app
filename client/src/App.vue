@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import AccessibilityToolbar from './components/AccessibilityToolbar.vue';
 import ReadingRuler from './components/ReadingRuler.vue';
@@ -8,7 +8,19 @@ import WordInspector from './components/WordInspector.vue';
 import PhonicsGame from './components/PhonicsGame.vue';
 import PdfReader from './components/PdfReader.vue';
 import { useSettingsStore } from './stores/settings';
-import { Sparkles, Mic, MicOff, Trash2, BookOpen, GraduationCap, FileText } from 'lucide-vue-next';
+import { 
+  Sparkles, 
+  Mic, 
+  MicOff, 
+  Trash2, 
+  BookOpen, 
+  GraduationCap, 
+  FileText,
+  Edit3,
+  BookOpenCheck,
+  Volume2,
+  Square
+} from 'lucide-vue-next';
 
 interface Article {
   id: number;
@@ -22,6 +34,7 @@ const articles = ref<Article[]>([]);
 const loading = ref(true);
 const voiceNote = ref('');
 const isListening = ref(false);
+const playgroundMode = ref<'edit' | 'read'>('edit');
 
 onMounted(async () => {
   try {
@@ -76,11 +89,69 @@ const stopListening = () => {
 
 const clearNote = () => {
   voiceNote.value = '';
+  playgroundMode.value = 'edit';
+  store.stopSpeaking();
+};
+
+const togglePlaygroundSpeech = () => {
+  if (store.isSpeaking && store.speakingText === voiceNote.value) {
+    store.stopSpeaking();
+  } else {
+    store.speak(voiceNote.value);
+  }
+};
+
+// Parse notes into word tokens with index ranges for highlighting
+interface TextToken {
+  text: string;
+  raw: string;
+  isWord: boolean;
+  startIndex: number;
+  endIndex: number;
+}
+
+const parsedNoteWords = computed<TextToken[]>(() => {
+  const text = voiceNote.value;
+  if (!text) return [];
+  
+  const tokens = text.split(/([a-zA-Z0-9']+|[^a-zA-Z0-9'\s]+|\s+)/);
+  let charIndex = 0;
+  return tokens.filter(t => t).map(t => {
+    const isWord = /^[a-zA-Z0-9']+$/.test(t);
+    const startIndex = charIndex;
+    const endIndex = charIndex + t.length;
+    charIndex = endIndex;
+    return {
+      text: t,
+      raw: t,
+      isWord,
+      startIndex,
+      endIndex
+    };
+  });
+});
+
+// Format words for Bionic Reading
+const bionicFormat = (word: string) => {
+  if (word.length <= 3) {
+    return `<strong class="bionic-prefix">${word.substring(0, 1)}</strong>${word.substring(1)}`;
+  } else if (word.length <= 6) {
+    return `<strong class="bionic-prefix">${word.substring(0, 2)}</strong>${word.substring(2)}`;
+  } else if (word.length <= 9) {
+    return `<strong class="bionic-prefix">${word.substring(0, 3)}</strong>${word.substring(3)}`;
+  } else {
+    const mid = Math.ceil(word.length * 0.45);
+    return `<strong class="bionic-prefix">${word.substring(0, mid)}</strong>${word.substring(mid)}`;
+  }
 };
 </script>
 
 <template>
-  <div class="app-container" :class="`font-${store.fontFamily}`">
+  <div 
+    class="app-container" 
+    :class="`font-${store.fontFamily}`"
+    :style="store.theme === 'custom' ? { '--custom-bg': store.customBgColor, '--custom-text': store.customTextColor } : {}"
+  >
     <header class="hero">
       <div class="container hero-container">
         <div class="logo">
@@ -122,31 +193,86 @@ const clearNote = () => {
     <main class="container">
       <KeepAlive>
         <div v-if="store.activeTab === 'reader'">
-          <!-- Voice Notes Section -->
+          <!-- Accessible Notepad & Playground -->
           <section class="card voice-notes fade-in">
-            <div class="card-header">
-              <span class="category">Tools</span>
-              <h3>Voice Notepad</h3>
+            <div class="card-header playground-header">
+              <div class="header-info">
+                <span class="category">Playground</span>
+                <h3>Accessible Notepad</h3>
+              </div>
+              
+              <!-- Mode Tabs -->
+              <div class="playground-mode-tabs">
+                <button 
+                  @click="playgroundMode = 'edit'; store.stopSpeaking()" 
+                  class="playground-tab-btn"
+                  :class="{ active: playgroundMode === 'edit' }"
+                >
+                  <Edit3 :size="16" />
+                  <span>Write Mode</span>
+                </button>
+                <button 
+                  @click="playgroundMode = 'read'" 
+                  class="playground-tab-btn"
+                  :class="{ active: playgroundMode === 'read' }"
+                  :disabled="!voiceNote.trim()"
+                >
+                  <BookOpenCheck :size="16" />
+                  <span>Read Mode</span>
+                </button>
+              </div>
             </div>
-            <textarea 
-              v-model="voiceNote" 
-              placeholder="Start speaking to take notes..."
-              rows="4"
-            ></textarea>
-            <div class="note-actions">
-              <button 
-                @click="isListening ? stopListening() : startListening()" 
-                class="action-btn mic-btn"
-                :class="{ listening: isListening }"
-              >
-                <Mic v-if="!isListening" :size="20" />
-                <MicOff v-else :size="20" />
-                {{ isListening ? 'Stop Listening' : 'Start Voice Typing' }}
-              </button>
-              <button @click="clearNote" class="action-btn clear-btn" v-if="voiceNote">
-                <Trash2 :size="18" />
-                Clear
-              </button>
+
+            <!-- Edit Mode View -->
+            <div v-if="playgroundMode === 'edit'" class="playground-edit-view">
+              <textarea 
+                v-model="voiceNote" 
+                placeholder="Type your text or start speaking to take notes..."
+                rows="5"
+              ></textarea>
+              <div class="note-actions">
+                <button 
+                  @click="isListening ? stopListening() : startListening()" 
+                  class="action-btn mic-btn"
+                  :class="{ listening: isListening }"
+                >
+                  <Mic v-if="!isListening" :size="20" />
+                  <MicOff v-else :size="20" />
+                  {{ isListening ? 'Stop Listening' : 'Start Voice Typing' }}
+                </button>
+                <button @click="clearNote" class="action-btn clear-btn" v-if="voiceNote">
+                  <Trash2 :size="18" />
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Read Mode View -->
+            <div v-else class="playground-read-view">
+              <div class="playground-read-toolbar">
+                <button @click="togglePlaygroundSpeech" class="action-btn tts-btn" :class="{ speaking: store.isSpeaking && store.speakingText === voiceNote }">
+                  <Volume2 v-if="!(store.isSpeaking && store.speakingText === voiceNote)" :size="18" />
+                  <Square v-else :size="18" />
+                  {{ store.isSpeaking && store.speakingText === voiceNote ? 'Stop Reading' : 'Read Aloud' }}
+                </button>
+              </div>
+              <div class="playground-content-display content">
+                <template v-for="(token, index) in parsedNoteWords" :key="index">
+                  <span 
+                    v-if="token.isWord" 
+                    class="word-interactive" 
+                    :class="{ 'speaking-word': store.isSpeaking && store.speakingText === voiceNote && store.speakingCharIndex >= token.startIndex && store.speakingCharIndex < token.endIndex }"
+                    @click="store.openWordInspector(token.raw)"
+                    :style="{ backgroundColor: store.highlightedWords[token.text.toLowerCase()] }"
+                  >
+                    <span v-if="store.bionicReading" v-html="bionicFormat(token.text)"></span>
+                    <span v-else>{{ token.text }}</span>
+                  </span>
+                  <template v-else>
+                    {{ token.text }}
+                  </template>
+                </template>
+              </div>
             </div>
           </section>
 
@@ -345,5 +471,103 @@ textarea {
 
 .app-container {
   min-height: 100vh;
+}
+
+/* Accessible Notepad Playground CSS */
+.playground-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.playground-mode-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 0.25rem;
+  border-radius: 12px;
+}
+
+.theme-dark .playground-mode-tabs {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.playground-tab-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.playground-tab-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.playground-tab-btn.active {
+  background: var(--bg-color);
+  color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  opacity: 1;
+}
+
+.playground-tab-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.playground-read-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.playground-read-toolbar {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1rem;
+}
+
+.theme-dark .playground-read-toolbar {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.playground-content-display {
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+}
+
+.tts-btn {
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+}
+
+.tts-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.tts-btn.speaking {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
 }
 </style>

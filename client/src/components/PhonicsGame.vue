@@ -6,7 +6,7 @@ import { HelpCircle, Volume2, Trophy, RotateCcw, CheckCircle2, AlertTriangle, Ar
 const store = useSettingsStore();
 
 // Game State
-const currentMode = ref<'word-complete' | 'letter-flip'>('word-complete');
+const currentMode = ref<'word-complete' | 'letter-flip' | 'word-scramble'>('word-complete');
 const score = ref(0);
 const questionsAnswered = ref(0);
 const totalQuestions = 5;
@@ -29,7 +29,7 @@ const wordQuestions: WordQuestion[] = [
   { word: 'play', missingIndex: [0], options: ['p', 'q'], correctLetter: 'p', definition: 'To have fun or take part in a game.' },
   { word: 'duck', missingIndex: [0], options: ['d', 'b'], correctLetter: 'd', definition: 'A water bird with webbed feet.' },
   { word: 'pond', missingIndex: [3], options: ['d', 'b'], correctLetter: 'd', definition: 'A small body of still water.' },
-  { word: 'bad', missingIndex: [0, 2], options: ['b', 'd'], correctLetter: 'b', definition: 'Opposite of good.' }, // note: first letter is b, last is d
+  { word: 'bad', missingIndex: [0, 2], options: ['b', 'd'], correctLetter: 'b', definition: 'Opposite of good.' },
   { word: 'quiz', missingIndex: [0], options: ['q', 'p'], correctLetter: 'q', definition: 'A short test of knowledge.' }
 ];
 
@@ -91,11 +91,6 @@ const letterIsFlipped = ref(true); // Horizontal flip state
 
 const letterAppearance = computed(() => {
   const target = flipQuestion.value.targetLetter;
-  // If target is 'd' and flipped horizontally, it looks like 'b'
-  // If target is 'b' and flipped, it looks like 'd'
-  // If target is 'q' and flipped, it looks like 'p'
-  // If target is 'p' and flipped, it looks like 'q'
-  
   if (letterIsFlipped.value) {
     if (target === 'd') return 'b';
     if (target === 'b') return 'd';
@@ -135,6 +130,105 @@ const checkFlipAnswer = () => {
   }, 2500);
 };
 
+// 3. Word Scramble Game Mode Data
+interface ScrambleQuestion {
+  word: string;
+  definition: string;
+}
+
+interface ScrambleLetter {
+  id: number;
+  char: string;
+  selected: boolean;
+}
+
+const scrambleQuestions: ScrambleQuestion[] = [
+  { word: 'friend', definition: 'A person whom one knows and has a bond of mutual affection.' },
+  { word: 'people', definition: 'Human beings in general or considered collectively.' },
+  { word: 'because', definition: 'For the reason that; since.' },
+  { word: 'would', definition: 'Used to indicate a future intention or possibility.' },
+  { word: 'there', definition: 'In, at, or to that place or position.' },
+  { word: 'what', definition: 'Used to ask for information about someone or something.' },
+  { word: 'school', definition: 'A place for teaching and learning.' },
+  { word: 'laugh', definition: 'Make spontaneous sounds that express amusement.' }
+];
+
+const currentScrambleIndex = ref(0);
+const scrambleQuestion = computed(() => scrambleQuestions[currentScrambleIndex.value]);
+const userSpelling = ref<ScrambleLetter[]>([]);
+const scrambledLetters = ref<ScrambleLetter[]>([]);
+
+const initScrambleQuestion = () => {
+  userSpelling.value = [];
+  const word = scrambleQuestion.value.word;
+  const letters = word.split('').map((char, index) => ({
+    id: index,
+    char,
+    selected: false
+  }));
+  
+  let shuffled;
+  do {
+    shuffled = [...letters].sort(() => Math.random() - 0.5);
+  } while (shuffled.map(l => l.char).join('') === word && word.length > 1);
+  
+  scrambledLetters.value = shuffled;
+};
+
+const selectScrambleLetter = (letter: ScrambleLetter) => {
+  if (feedback.value.status !== null) return;
+  if (letter.selected) return;
+  
+  letter.selected = true;
+  userSpelling.value.push(letter);
+  playWordSound(letter.char);
+  
+  if (userSpelling.value.length === scrambleQuestion.value.word.length) {
+    checkScrambleAnswer();
+  }
+};
+
+const removeSpelledLetter = (letter: ScrambleLetter, index: number) => {
+  if (feedback.value.status !== null) return;
+  
+  userSpelling.value.splice(index, 1);
+  const found = scrambledLetters.value.find(l => l.id === letter.id);
+  if (found) {
+    found.selected = false;
+  }
+};
+
+const clearSpelling = () => {
+  if (feedback.value.status !== null) return;
+  userSpelling.value = [];
+  scrambledLetters.value.forEach(l => l.selected = false);
+};
+
+const checkScrambleAnswer = () => {
+  const spelling = userSpelling.value.map(l => l.char).join('');
+  const correct = spelling === scrambleQuestion.value.word;
+  questionsAnswered.value++;
+  
+  if (correct) {
+    score.value++;
+    feedback.value = {
+      status: 'correct',
+      message: `Fantastic! You spelled "${scrambleQuestion.value.word}" correctly!`
+    };
+    playWordSound(scrambleQuestion.value.word);
+  } else {
+    feedback.value = {
+      status: 'incorrect',
+      message: `Not quite. The correct spelling is "${scrambleQuestion.value.word}".`
+    };
+    playWordSound(scrambleQuestion.value.word);
+  }
+  
+  setTimeout(() => {
+    nextQuestion();
+  }, 2500);
+};
+
 // Next Question / Finish Game
 const nextQuestion = () => {
   feedback.value = { status: null, message: '' };
@@ -150,13 +244,20 @@ const nextQuestion = () => {
       nextIndex = Math.floor(Math.random() * wordQuestions.length);
     } while (nextIndex === currentWordIndex.value);
     currentWordIndex.value = nextIndex;
-  } else {
+  } else if (currentMode.value === 'letter-flip') {
     let nextIndex;
     do {
       nextIndex = Math.floor(Math.random() * flipQuestions.length);
     } while (nextIndex === currentFlipIndex.value);
     currentFlipIndex.value = nextIndex;
     letterIsFlipped.value = true; // reset to flipped
+  } else {
+    let nextIndex;
+    do {
+      nextIndex = Math.floor(Math.random() * scrambleQuestions.length);
+    } while (nextIndex === currentScrambleIndex.value);
+    currentScrambleIndex.value = nextIndex;
+    initScrambleQuestion();
   }
 };
 
@@ -167,10 +268,14 @@ const resetGame = () => {
   feedback.value = { status: null, message: '' };
   currentWordIndex.value = Math.floor(Math.random() * wordQuestions.length);
   currentFlipIndex.value = Math.floor(Math.random() * flipQuestions.length);
+  currentScrambleIndex.value = Math.floor(Math.random() * scrambleQuestions.length);
   letterIsFlipped.value = true;
+  if (currentMode.value === 'word-scramble') {
+    initScrambleQuestion();
+  }
 };
 
-const switchMode = (mode: 'word-complete' | 'letter-flip') => {
+const switchMode = (mode: 'word-complete' | 'letter-flip' | 'word-scramble') => {
   currentMode.value = mode;
   resetGame();
 };
@@ -199,6 +304,13 @@ const switchMode = (mode: 'word-complete' | 'letter-flip') => {
           :class="{ active: currentMode === 'letter-flip' }"
         >
           Letter Flipper
+        </button>
+        <button 
+          @click="switchMode('word-scramble')" 
+          class="tab-btn" 
+          :class="{ active: currentMode === 'word-scramble' }"
+        >
+          Word Scrambler
         </button>
       </div>
     </div>
@@ -255,7 +367,7 @@ const switchMode = (mode: 'word-complete' | 'letter-flip') => {
       </div>
 
       <!-- Mode 2: Letter Flipper -->
-      <div v-else class="mode-container letter-flip-mode">
+      <div v-else-if="currentMode === 'letter-flip'" class="mode-container letter-flip-mode">
         <p class="instruction-desc">{{ flipQuestion.promptText }}</p>
 
         <div class="flipping-canvas">
@@ -277,6 +389,62 @@ const switchMode = (mode: 'word-complete' | 'letter-flip') => {
           </button>
           <button @click="checkFlipAnswer" class="control-action-btn submit-btn" :disabled="feedback.status !== null">
             Submit Orientation
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode 3: Word Scrambler -->
+      <div v-else class="mode-container word-scramble-mode">
+        <div class="hint-card">
+          <HelpCircle :size="20" class="hint-icon" />
+          <p>{{ scrambleQuestion.definition }}</p>
+          <button @click="playWordSound(scrambleQuestion.word)" class="sound-btn" title="Listen to Hint">
+            <Volume2 :size="18" />
+            Listen
+          </button>
+        </div>
+
+        <!-- Spelling slots -->
+        <p class="instruction">Your spelling (click a letter to remove it):</p>
+        <div class="spelling-slots">
+          <button 
+            v-for="(letter, i) in userSpelling" 
+            :key="i"
+            class="spelled-letter-bubble"
+            @click="removeSpelledLetter(letter, i)"
+            title="Click to remove letter"
+            :disabled="feedback.status !== null"
+          >
+            {{ letter.char }}
+          </button>
+          <!-- Empty Slots placeholders -->
+          <div 
+            v-for="i in (scrambleQuestion.word.length - userSpelling.length)" 
+            :key="'empty-' + i" 
+            class="empty-spelling-slot"
+          >
+            _
+          </div>
+        </div>
+
+        <p class="instruction-desc">Click the scrambled letter bubbles in order to spell the word:</p>
+
+        <div class="scrambled-letters-container">
+          <button 
+            v-for="letter in scrambledLetters" 
+            :key="letter.id"
+            @click="selectScrambleLetter(letter)"
+            class="scramble-letter-btn"
+            :class="{ selected: letter.selected }"
+            :disabled="letter.selected || feedback.status !== null"
+          >
+            {{ letter.char }}
+          </button>
+        </div>
+
+        <div class="scramble-actions">
+          <button @click="clearSpelling" class="control-action-btn clear-btn" :disabled="userSpelling.length === 0 || feedback.status !== null">
+            Reset Spelling
           </button>
         </div>
       </div>
@@ -705,5 +873,102 @@ const switchMode = (mode: 'word-complete' | 'letter-flip') => {
 @keyframes trophy-bounce {
   from { transform: translateY(0); }
   to { transform: translateY(-8px); }
+}
+
+/* Word Scramble styles */
+.word-scramble-mode {
+  width: 100%;
+}
+
+.spelling-slots {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  min-height: 70px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.spelled-letter-bubble {
+  width: 55px;
+  height: 55px;
+  border-radius: 14px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.spelled-letter-bubble:hover:not(:disabled) {
+  background: #ef4444;
+  transform: scale(0.95);
+}
+
+.empty-spelling-slot {
+  width: 55px;
+  height: 55px;
+  border-radius: 14px;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.theme-dark .empty-spelling-slot {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.scrambled-letters-container {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.scramble-letter-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+  background: var(--bg-color);
+  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scramble-letter-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+.scramble-letter-btn.selected {
+  opacity: 0.25;
+  transform: scale(0.9);
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.scramble-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 </style>

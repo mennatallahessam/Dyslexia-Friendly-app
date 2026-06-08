@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    theme: 'default', // default, cream, sky, dark
-    fontFamily: 'outfit', // outfit, opendyslexic, comic
+    theme: 'default', // default, cream, sky, dark, custom
+    fontFamily: 'outfit', // outfit, opendyslexic, comic, lexend
     useDyslexicFont: false, // kept for backward compatibility if needed, but we use fontFamily
     showRuler: false,
     useFocusMask: false,
@@ -18,6 +18,10 @@ export const useSettingsStore = defineStore('settings', {
     bionicReading: false,
     activeTab: 'reader', // reader, phonics, pdf
     isSpeaking: false,
+    speakingText: '',
+    speakingCharIndex: -1,
+    customBgColor: '#fdfdf5',
+    customTextColor: '#2c2c2c',
     inspectedWord: '',
     showInspector: false,
     pdfText: '',
@@ -28,20 +32,31 @@ export const useSettingsStore = defineStore('settings', {
       this.theme = theme;
       document.body.className = `theme-${theme}`;
       this.applyFontFamily(this.fontFamily);
+      this.applyCustomColors();
     },
-    setFontFamily(font: 'outfit' | 'opendyslexic' | 'comic') {
+    setFontFamily(font: 'outfit' | 'opendyslexic' | 'comic' | 'lexend') {
       this.fontFamily = font;
       this.useDyslexicFont = font === 'opendyslexic';
       this.applyFontFamily(font);
     },
     applyFontFamily(font: string) {
-      document.body.classList.remove('font-outfit', 'font-opendyslexic', 'font-comic');
+      document.body.classList.remove('font-outfit', 'font-opendyslexic', 'font-comic', 'font-lexend');
       document.body.classList.add(`font-${font}`);
     },
     toggleFont() {
-      // Toggle function for backward compat
       const nextFont = this.fontFamily === 'opendyslexic' ? 'outfit' : 'opendyslexic';
       this.setFontFamily(nextFont);
+    },
+    setCustomColors(bgColor: string, textColor: string) {
+      this.customBgColor = bgColor;
+      this.customTextColor = textColor;
+      this.applyCustomColors();
+    },
+    applyCustomColors() {
+      if (this.theme === 'custom') {
+        document.documentElement.style.setProperty('--custom-bg', this.customBgColor);
+        document.documentElement.style.setProperty('--custom-text', this.customTextColor);
+      }
     },
     toggleRuler() {
       this.showRuler = !this.showRuler;
@@ -87,7 +102,6 @@ export const useSettingsStore = defineStore('settings', {
       this.activeTab = tab;
     },
     openWordInspector(word: string) {
-      // Clean word from trailing punctuation
       const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
       if (cleanWord) {
         this.inspectedWord = cleanWord;
@@ -116,16 +130,35 @@ export const useSettingsStore = defineStore('settings', {
     speak(text: string) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+        this.speakingText = text;
+        this.speakingCharIndex = -1;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onstart = () => { this.isSpeaking = true; };
-        utterance.onend = () => { this.isSpeaking = false; };
-        utterance.onerror = () => { this.isSpeaking = false; };
+        utterance.onstart = () => { 
+          this.isSpeaking = true; 
+        };
+        utterance.onend = () => { 
+          this.isSpeaking = false; 
+          this.speakingText = '';
+          this.speakingCharIndex = -1;
+        };
+        utterance.onerror = () => { 
+          this.isSpeaking = false; 
+          this.speakingText = '';
+          this.speakingCharIndex = -1;
+        };
+        utterance.onboundary = (event: any) => {
+          if (event.name === 'word') {
+            this.speakingCharIndex = event.charIndex;
+          }
+        };
         window.speechSynthesis.speak(utterance);
       }
     },
     stopSpeaking() {
       window.speechSynthesis.cancel();
       this.isSpeaking = false;
+      this.speakingText = '';
+      this.speakingCharIndex = -1;
     }
   }
 });
