@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+const auth = useAuthStore();
+const router = useRouter();
+function handleLogout() {
+  auth.logout();
+  router.replace('/login');
+}
 import { ref, watch } from 'vue';
 import { useSettingsStore } from '../stores/settings';
 import { 
@@ -14,7 +22,7 @@ import {
   Eye,
   EyeOff,
   AlignJustify,
-  Palette
+  LogOut,
 } from 'lucide-vue-next';
 
 const store = useSettingsStore();
@@ -244,6 +252,12 @@ watch(() => store.customTextColor, (newTxt) => {
           <Eye :size="18" />
           <span>Bionic</span>
         </button>
+        <template v-if="auth.isAuthenticated">
+          <button @click="handleLogout" class="icon-toggle-btn" title="Logout">
+            <LogOutIcon :size="18" />
+            <span>Logout</span>
+          </button>
+        </template>
         <button @click="store.toggleRuler" :class="{ active: store.showRuler }" title="Reading Ruler and Focus Mask" class="icon-toggle-btn">
           <Ruler :size="18" />
           <span>Ruler</span>

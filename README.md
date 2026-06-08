@@ -1,5 +1,5 @@
 # Dyslexia‑Friendly Web App
-
+Developed primarily by **Mennatallah Essam** as a personal project.
 ## Overview
 A premium, interactive web application designed to make reading and learning more accessible for individuals with dyslexia. Features include:
 - **Dynamic font options** – OpenDyslexic, Lexend, and customizable fonts.
@@ -15,13 +15,13 @@ A premium, interactive web application designed to make reading and learning mor
 ## Demo
 Below is a quick visual tour of the app. Hover over the images for a preview of the interaction.
 
-![Demo 1 – Toolbar and Font Switch](client/assets/demo_toolbar_font_switch.png)
+![Demo 1 – Toolbar and Font Switch](assets/demo_toolbar_font_switch.png)
 
-![Demo 2 – Reading Ruler & Focus Mask](client/assets/demo_ruler_focus_mask.png)
+![Demo 2 – Reading Ruler & Focus Mask](assets/demo_ruler_focus_mask.png)
 
-![Demo 3 – TTS Follow‑Along Highlight](client/assets/demo_tts_follow_along.png)
+![Demo 3 – TTS Follow‑Along Highlight](assets/demo_tts_follow_along.png)
 
-![Demo 4 – Word Scramble Game](client/assets/demo_word_scramble.png)
+![Demo 4 – Word Scramble Game](assets/demo_word_scramble.png)
 
 ## Getting Started
 ```bash

@@ -2,38 +2,41 @@ import { defineStore } from 'pinia';
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    theme: 'default', // default, cream, sky, dark, custom
-    fontFamily: 'outfit', // outfit, opendyslexic, comic, lexend
-    useDyslexicFont: false, // kept for backward compatibility if needed, but we use fontFamily
-    showRuler: false,
-    useFocusMask: false,
-    rulerY: 0,
-    rulerColor: '#6366f1',
-    rulerHeight: 40,
-    rulerOpacity: 0.15,
-    fontSize: 18,
-    lineHeight: 1.6,
-    letterSpacing: 0,
-    wordSpacing: 0,
-    bionicReading: false,
-    activeTab: 'reader', // reader, phonics, pdf
-    isSpeaking: false,
-    speakingText: '',
-    speakingCharIndex: -1,
-    customBgColor: '#fdfdf5',
-    customTextColor: '#2c2c2c',
-    inspectedWord: '',
-    showInspector: false,
-    pdfText: '',
-    highlightedWords: {} as Record<string, string>
-  }),
+  // Existing state
+  // ...
+  // Accessibility preferences
+  highContrast: true,
+  reducedMotion: true,
+  // Disability is loaded lazily from localStorage; fallback handled later
+  // (duplicate entry removed)
+  theme: 'default', // default, cream, sky, dark, custom
+  fontFamily: 'outfit', // outfit, opendyslexic, comic, lexend
+  useDyslexicFont: false, // kept for backward compatibility if needed, but we use fontFamily
+  showRuler: false,
+  useFocusMask: false,
+  rulerY: 0,
+  rulerColor: '#6366f1',
+  rulerHeight: 40,
+  rulerOpacity: 0.15,
+  fontSize: 18,
+  lineHeight: 1.6,
+  letterSpacing: 0,
+  wordSpacing: 0,
+  bionicReading: false,
+  activeTab: 'reader', // reader, phonics, pdf, math, writing
+  isSpeaking: false,
+  speakingText: '',
+  speakingCharIndex: -1,
+  customBgColor: '#fdfdf5',
+  customTextColor: '#2c2c2c',
+  inspectedWord: '',
+  showInspector: false,
+  pdfText: '',
+  highlightedWords: {} as Record<string, string>,
+  disability: null as 'dyslexia' | 'dyscalculia' | null
+}),
   actions: {
-    setTheme(theme: string) {
-      this.theme = theme;
-      document.body.className = `theme-${theme}`;
-      this.applyFontFamily(this.fontFamily);
-      this.applyCustomColors();
-    },
+
     setFontFamily(font: 'outfit' | 'opendyslexic' | 'comic' | 'lexend') {
       this.fontFamily = font;
       this.useDyslexicFont = font === 'opendyslexic';
@@ -98,7 +101,11 @@ export const useSettingsStore = defineStore('settings', {
     toggleBionicReading() {
       this.bionicReading = !this.bionicReading;
     },
-    setActiveTab(tab: 'reader' | 'phonics' | 'pdf') {
+    setDisability(dis: 'dyslexia' | 'dyscalculia') {
+      this.disability = dis;
+      localStorage.setItem('disability', dis);
+    },
+    setActiveTab(tab: 'reader' | 'phonics' | 'pdf' | 'math' | 'writing') {
       this.activeTab = tab;
     },
     openWordInspector(word: string) {
