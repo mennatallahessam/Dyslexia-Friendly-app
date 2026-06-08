@@ -15,13 +15,13 @@ A premium, interactive web application designed to make reading and learning mor
 ## Demo
 Below is a quick visual tour of the app. Hover over the images for a preview of the interaction.
 
-![Demo 1 – Toolbar and Font Switch](/C:/Users/iRepair/.gemini/antigravity-ide/brain/655a627a-f24e-4f57-9c69-2bc6b82f45fa/.tempmediaStorage/media_655a627a-f24e-4f57-9c69-2bc6b82f45fa_1780878159745.png)
+![Demo 1 – Toolbar and Font Switch](client/assets/demo_toolbar_font_switch.png)
 
-![Demo 2 – Reading Ruler & Focus Mask](/C:/Users/iRepair/.gemini/antigravity-ide/brain/655a627a-f24e-4f57-9c69-2bc6b82f45fa/.tempmediaStorage/media_655a627a-f24e-4f57-9c69-2bc6b82f45fa_1780878199676.png)
+![Demo 2 – Reading Ruler & Focus Mask](client/assets/demo_ruler_focus_mask.png)
 
-![Demo 3 – TTS Follow‑Along Highlight](/C:/Users/iRepair/.gemini/antigravity-ide/brain/655a627a-f24e-4f57-9c69-2bc6b82f45fa/.tempmediaStorage/media_655a627a-f24e-4f57-9c69-2bc6b82f45fa_1780878238269.png)
+![Demo 3 – TTS Follow‑Along Highlight](client/assets/demo_tts_follow_along.png)
 
-![Demo 4 – Word Scramble Game](/C:/Users/iRepair/.gemini/antigravity-ide/brain/655a627a-f24e-4f57-9c69-2bc6b82f45fa/.tempmediaStorage/media_655a627a-f24e-4f57-9c69-2bc6b82f45fa_1780878485732.png)
+![Demo 4 – Word Scramble Game](client/assets/demo_word_scramble.png)
 
 ## Getting Started
 ```bash
