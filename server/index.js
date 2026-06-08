@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const multer = require('multer');
-const pdfParse = require('pdf-parse');
+const pdfParse = require('pdf-parse').default;
 require('dotenv').config();
 
 const app = express();
@@ -14,7 +14,11 @@ app.use(express.json());
 
 // Configure multer (in-memory storage)
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// Limit file size to 10MB to avoid memory issues
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 // PDF Text Extraction Route
 app.post('/api/extract-pdf', upload.single('file'), async (req, res) => {
@@ -25,13 +29,16 @@ app.post('/api/extract-pdf', upload.single('file'), async (req, res) => {
 
     const data = await pdfParse(req.file.buffer);
     res.json({
-      text: data.text,
-      pages: data.numpages,
-      info: data.info
-    });
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    res.status(500).send({ error: 'Failed to extract text from PDF file.' });
+        text: data.text,
+        pages: data.numpages,
+        info: data.info
+      });
+    } catch (error) {
+      // Log detailed error for debugging
+      console.error('PDF parsing error details:', error);
+      // Return a more informative message to the client
+      const message = error.message || 'Failed to extract text from PDF file.';
+      res.status(500).send({ error: message });
   }
 });
 
