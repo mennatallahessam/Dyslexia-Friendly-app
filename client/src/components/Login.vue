@@ -14,6 +14,7 @@
         </div>
         <button type="submit" class="login-btn">Sign In</button>
       </form>
+      <p class="register-link">Don't have an account? <router-link to="/register">Sign Up</router-link></p>
     </div>
   </div>
 </template>

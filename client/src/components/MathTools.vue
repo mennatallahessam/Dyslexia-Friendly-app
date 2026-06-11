@@ -20,39 +20,43 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { renderMathInElement } from 'mathjax-full/js/components/startup';
-import { mathjax } from 'mathjax-full/js/mathjax.js';
-import { TeX } from 'mathjax-full/js/input/tex.js';
-import { SVG } from 'mathjax-full/js/output/svg.js';
-import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
-import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
 import Plotly from 'plotly.js-dist-min';
 
-const adaptor = liteAdaptor();
-RegisterHTMLHandler(adaptor);
-
-const tex = new TeX({
-  packages: ['base', 'ams']
-});
-const svg = new SVG({
-  fontCache: 'local'
-});
-const mj = mathjax.document(document, {
-  InputJax: tex,
-  OutputJax: svg
-});
+// Lazy-load MathJax to avoid Vite require errors
+let mj: any = null;
+let adaptor: any = null;
+async function loadMathJax() {
+  try {
+    const [{ mathjax }, { TeX }, { SVG }, { liteAdaptor }, { RegisterHTMLHandler }] = await Promise.all([
+      import('mathjax-full/js/mathjax.js'),
+      import('mathjax-full/js/input/tex.js'),
+      import('mathjax-full/js/output/svg.js'),
+      import('mathjax-full/js/adaptors/liteAdaptor.js'),
+      import('mathjax-full/js/handlers/html.js')
+    ]);
+    adaptor = liteAdaptor();
+    RegisterHTMLHandler(adaptor);
+    const tex = new TeX({ packages: ['base', 'ams'] });
+    const svg = new SVG({ fontCache: 'local' });
+    mj = mathjax.document(document, { InputJax: tex, OutputJax: svg });
+  } catch (e) {
+    console.error('Failed to load MathJax:', e);
+  }
+}
 
 const latex = ref('');
 const renderedMath = ref('');
 const funcExpr = ref('Math.sin(x)');
 const plotContainer = ref<HTMLElement | null>(null);
 
-function renderMath() {
-  const node = document.createElement('div');
-  node.textContent = `$${latex.value}$`;
-  mj.convert(node, { display: true }).then(() => {
-    renderedMath.value = node.innerHTML;
-  });
+async function renderMath() {
+  if (!mj) await loadMathJax();
+  try {
+    const mathNode = mj.convert(latex.value || 'x^2 + y^2 = z^2', { display: true });
+    renderedMath.value = adaptor.outerHTML(mathNode);
+  } catch (e) {
+    console.error('MathJax rendering error:', e);
+  }
 }
 
 function plotFunction() {

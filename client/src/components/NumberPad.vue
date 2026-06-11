@@ -13,7 +13,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useSettingsStore } from '@/stores/settings';
 
 const emit = defineEmits(['input']);
 const value = ref('');

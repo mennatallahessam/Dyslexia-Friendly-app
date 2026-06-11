@@ -33,10 +33,17 @@ export const useSettingsStore = defineStore('settings', {
   showInspector: false,
   pdfText: '',
   highlightedWords: {} as Record<string, string>,
-  disability: null as 'dyslexia' | 'dyscalculia' | null
+  disability: (localStorage.getItem('disability') as 'dyslexia' | 'dyscalculia' | null) || null
 }),
   actions: {
-
+    setTheme(theme: string) {
+      this.theme = theme;
+      document.body.classList.remove('theme-cream', 'theme-sky', 'theme-dark', 'theme-custom');
+      if (theme !== 'default') {
+        document.body.classList.add(`theme-${theme}`);
+      }
+      this.applyCustomColors();
+    },
     setFontFamily(font: 'outfit' | 'opendyslexic' | 'comic' | 'lexend') {
       this.fontFamily = font;
       this.useDyslexicFont = font === 'opendyslexic';

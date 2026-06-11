@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useSettingsStore } from './settings';
 
 interface User {
   email: string;
@@ -58,6 +59,10 @@ export const useAuthStore = defineStore('auth', {
       this.token = '';
       localStorage.removeItem('authUser');
       localStorage.removeItem('authToken');
+      localStorage.removeItem('disability');
+      
+      const settings = useSettingsStore();
+      settings.disability = null;
     },
     loadFromStorage() {
       const storedUser = localStorage.getItem('authUser');

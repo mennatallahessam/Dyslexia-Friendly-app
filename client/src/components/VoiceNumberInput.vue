@@ -16,22 +16,22 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-let recognition: SpeechRecognition | null = null;
+let recognition: any = null;
 const listening = ref(false);
 const transcript = ref('');
 const errorMessage = ref('');
 
 if ('webkitSpeechRecognition' in window) {
-  const SpeechRecognition = (window as any).webkitSpeechRecognition as typeof SpeechRecognition;
+  const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
   recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
-  recognition.onresult = (event: SpeechRecognitionEvent) => {
+  recognition.onresult = (event: any) => {
     const result = event.results[0][0].transcript;
     transcript.value = result.trim();
   };
-  recognition.onerror = (event) => {
+  recognition.onerror = (event: any) => {
     errorMessage.value = `Error: ${event.error}`;
   };
   recognition.onend = () => {

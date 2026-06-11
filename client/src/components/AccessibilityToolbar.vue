@@ -23,6 +23,7 @@ import {
   EyeOff,
   AlignJustify,
   LogOut,
+  Palette,
 } from 'lucide-vue-next';
 
 const store = useSettingsStore();
@@ -254,7 +255,7 @@ watch(() => store.customTextColor, (newTxt) => {
         </button>
         <template v-if="auth.isAuthenticated">
           <button @click="handleLogout" class="icon-toggle-btn" title="Logout">
-            <LogOutIcon :size="18" />
+            <LogOut :size="18" />
             <span>Logout</span>
           </button>
         </template>
