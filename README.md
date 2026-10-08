@@ -1,5 +1,8 @@
 # Dyslexia‑Friendly Web App
 Developed primarily by **Mennatallah Essam** as a personal project.
+
+🚀 **Live Demo**: [https://dyslexia-friendly-app-1.onrender.com](https://dyslexia-friendly-app-1.onrender.com)
+
 ## Overview
 A premium, interactive web application designed to make reading and learning more accessible for individuals with dyslexia. Features include:
 - **Dynamic font options** – OpenDyslexic, Lexend, and customizable fonts.
