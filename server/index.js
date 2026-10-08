@@ -76,6 +76,21 @@ app.get('/health', (req, res) => {
   res.status(200).send('Server is running');
 });
 
+// Serve frontend static assets if client/dist exists
+const path = require('path');
+const fs = require('fs');
+const clientDistPath = path.join(__dirname, '../client/dist');
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && req.path !== '/health') {
+      return res.sendFile(path.join(clientDistPath, 'index.html'));
+    }
+    next();
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

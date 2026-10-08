@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useSettingsStore } from '@/stores/settings';
+import { API_BASE_URL } from '@/config/api';
 import ArticleCard from './ArticleCard.vue';
 import {
   Mic,
@@ -29,7 +30,7 @@ const playgroundMode = ref<'edit' | 'read'>('edit');
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:3000/api/articles');
+    const response = await axios.get(`${API_BASE_URL}/api/articles`);
     articles.value = response.data;
   } catch (error) {
     console.error('Error fetching articles:', error);

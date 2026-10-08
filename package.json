@@ -1,0 +1,21 @@
+{
+  "name": "dyslexia-friendly-app",
+  "version": "1.0.0",
+  "description": "Accessible web application for reading, writing, and phonics games",
+  "main": "server/index.js",
+  "scripts": {
+    "postinstall": "npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix client run build",
+    "start": "node server/index.js",
+    "dev": "npm --prefix client run dev"
+  },
+  "keywords": [
+    "dyslexia",
+    "accessibility",
+    "vue",
+    "express",
+    "vite"
+  ],
+  "author": "Mennatallah Essam",
+  "license": "MIT"
+}

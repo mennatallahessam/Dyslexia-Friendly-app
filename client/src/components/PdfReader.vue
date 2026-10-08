@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import { useSettingsStore } from '../stores/settings';
+import { API_BASE_URL } from '../config/api';
 import { Upload, FileText, Volume2, Square, RefreshCw, AlertCircle } from 'lucide-vue-next';
 
 const store = useSettingsStore();
@@ -96,7 +97,7 @@ const uploadFile = async (file: File) => {
   formData.append('file', file);
 
   try {
-    const response = await axios.post('http://localhost:3000/api/extract-pdf', formData, {
+    const response = await axios.post(`${API_BASE_URL}/api/extract-pdf`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
