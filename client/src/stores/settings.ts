@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore('settings', {
   showInspector: false,
   pdfText: '',
   highlightedWords: {} as Record<string, string>,
-  disability: (localStorage.getItem('disability') as 'dyslexia' | 'dyscalculia' | null) || null
+  disability: (localStorage.getItem('disability') as 'dyslexia' | 'dyscalculia' | 'dysgraphia' | null) || null
 }),
   actions: {
     setTheme(theme: string) {
@@ -108,7 +108,7 @@ export const useSettingsStore = defineStore('settings', {
     toggleBionicReading() {
       this.bionicReading = !this.bionicReading;
     },
-    setDisability(dis: 'dyslexia' | 'dyscalculia') {
+    setDisability(dis: 'dyslexia' | 'dyscalculia' | 'dysgraphia') {
       this.disability = dis;
       localStorage.setItem('disability', dis);
     },

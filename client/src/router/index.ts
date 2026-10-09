@@ -24,7 +24,12 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/dyscalculia/digit-assembly', component: () => import('@/components/DigitAssembly.vue') },
   { path: '/dyscalculia/place-value-columns', component: () => import('@/components/PlaceValueColumns.vue') },
   { path: '/dyscalculia/base-ten-blocks', component: () => import('@/components/BaseTenBlocks.vue') },
-  { path: '/dyscalculia/number-line', component: () => import('@/components/NumberLine.vue') }
+  { path: '/dyscalculia/number-line', component: () => import('@/components/NumberLine.vue') },
+
+  // Dysgraphia core toolkit routes
+  { path: '/dysgraphia', component: () => import('@/components/DysgraphiaDashboard.vue') },
+  { path: '/dysgraphia/writing-assistant', component: WritingAssistant },
+  { path: '/dysgraphia/handwriting-canvas', component: () => import('@/components/HandwritingCanvas.vue') }
 ];
 
 const router = createRouter({

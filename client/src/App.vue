@@ -48,11 +48,16 @@ const handleLogout = () => {
             <router-link to="/dyscalculia" class="nav-item">Dashboard</router-link>
             <router-link to="/math-tools" class="nav-item">Math Tools</router-link>
           </template>
+          <template v-else-if="store.disability === 'dysgraphia'">
+            <router-link to="/dysgraphia" class="nav-item">Dashboard</router-link>
+            <router-link to="/dysgraphia/writing-assistant" class="nav-item">Writing Studio</router-link>
+            <router-link to="/dysgraphia/handwriting-canvas" class="nav-item">Handwriting & Tracing</router-link>
+          </template>
         </nav>
         
         <div class="user-controls">
           <span v-if="store.disability" class="profile-badge" :class="store.disability">
-            {{ store.disability === 'dyslexia' ? 'Dyslexia' : 'Dyscalculia' }}
+            {{ store.disability === 'dyslexia' ? 'Dyslexia' : store.disability === 'dyscalculia' ? 'Dyscalculia' : 'Dysgraphia' }}
           </span>
           <button v-if="store.disability" @click="switchProfile" class="switch-profile-btn" title="Switch Profile">
             Switch Profile
@@ -159,6 +164,11 @@ const handleLogout = () => {
 .profile-badge.dyscalculia {
   background: rgba(236, 72, 153, 0.1);
   color: #ec4899;
+}
+
+.profile-badge.dysgraphia {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
 }
 
 .switch-profile-btn {

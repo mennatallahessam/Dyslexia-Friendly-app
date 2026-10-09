@@ -1,26 +1,41 @@
 <template>
   <div class="disability-selection">
-    <h2 class="title">Choose Your Disability</h2>
+    <h2 class="title">Choose Your Profile</h2>
     <div class="cards">
       <button class="card" @click="choose('dyslexia')">
-        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span>Dyslexia</span>
       </button>
       <button class="card" @click="choose('dyscalculia')">
-        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18h14V3H5zm12 16H7V5h10v14z"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 10h8"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>
         <span>Dyscalculia</span>
+      </button>
+      <button class="card" @click="choose('dysgraphia')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Dysgraphia</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import { useSettingsStore } from '@/stores/settings';
+
+const router = useRouter();
 const store = useSettingsStore();
-function choose(dis: 'dyslexia' | 'dyscalculia') {
+
+function choose(dis: 'dyslexia' | 'dyscalculia' | 'dysgraphia') {
   store.setDisability(dis);
-  // after selection, default to the appropriate start tab
-  store.setActiveTab('reader');
+  if (dis === 'dyslexia') {
+    store.setActiveTab('reader');
+    router.push('/reader');
+  } else if (dis === 'dyscalculia') {
+    router.push('/dyscalculia');
+  } else if (dis === 'dysgraphia') {
+    store.setActiveTab('writing');
+    router.push('/dysgraphia');
+  }
 }
 </script>
 
