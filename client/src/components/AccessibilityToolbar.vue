@@ -1,12 +1,4 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
-const auth = useAuthStore();
-const router = useRouter();
-function handleLogout() {
-  auth.logout();
-  router.replace('/login');
-}
 import { ref, watch } from 'vue';
 import { useSettingsStore } from '../stores/settings';
 import { 
@@ -22,11 +14,15 @@ import {
   Eye,
   EyeOff,
   AlignJustify,
-  LogOut,
   Palette,
+  Sliders,
+  X
 } from 'lucide-vue-next';
 
 const store = useSettingsStore();
+
+// Collapsed state: default to true so it sits as a compact floating widget and never blocks page content
+const isCollapsed = ref(true);
 
 const customBg = ref(store.customBgColor);
 const customText = ref(store.customTextColor);
@@ -55,235 +51,275 @@ watch(() => store.customTextColor, (newTxt) => {
 </script>
 
 <template>
-  <div class="toolbar-wrapper">
-    <!-- Sliding Custom Theme Panel -->
+  <div class="accessibility-widget-wrapper">
+    <!-- Collapsed Floating Button Trigger -->
+    <Transition name="fade-pop">
+      <button 
+        v-if="isCollapsed" 
+        @click="isCollapsed = false" 
+        class="floating-widget-trigger"
+        title="Open Accessibility Controls"
+      >
+        <Sliders :size="18" class="trigger-icon" />
+        <span class="trigger-label">Accessibility</span>
+      </button>
+    </Transition>
+
+    <!-- Expanded Full Floating Toolbar Panel -->
     <Transition name="slide-up">
-      <div v-if="store.theme === 'custom'" class="ruler-sub-toolbar custom-theme-sub-toolbar">
-        <div class="toolbar-group colors-group">
-          <span class="label-txt">BG:</span>
-          <input 
-            type="color" 
-            v-model="customBg" 
-            @input="updateCustomColors"
-            class="color-picker-input" 
-            title="Custom Background Color"
-          />
-          <button 
-            v-for="bg in ['#fdfdf5', '#fee2e2', '#ffedd5', '#f0fdf4', '#ecfeff']" 
-            :key="bg" 
-            @click="selectPresetBg(bg)"
-            class="preset-dot"
-            :style="{ backgroundColor: bg }"
-            :class="{ active: store.customBgColor === bg }"
-            title="Select preset background"
-          ></button>
+      <div v-if="!isCollapsed" class="toolbar-container">
+        <!-- Sub-toolbar for Custom Colors -->
+        <div v-if="store.theme === 'custom'" class="ruler-sub-toolbar custom-theme-sub-toolbar">
+          <div class="toolbar-group colors-group">
+            <span class="label-txt">BG:</span>
+            <input 
+              type="color" 
+              v-model="customBg" 
+              @input="updateCustomColors"
+              class="color-picker-input" 
+              title="Custom Background Color"
+            />
+            <button 
+              v-for="bg in ['#fdfdf5', '#fee2e2', '#ffedd5', '#f0fdf4', '#ecfeff']" 
+              :key="bg" 
+              @click="selectPresetBg(bg)"
+              class="preset-dot"
+              :style="{ backgroundColor: bg }"
+              :class="{ active: store.customBgColor === bg }"
+              title="Select preset background"
+            ></button>
+          </div>
+          
+          <div class="sub-divider"></div>
+          
+          <div class="toolbar-group colors-group">
+            <span class="label-txt">Text:</span>
+            <input 
+              type="color" 
+              v-model="customText" 
+              @input="updateCustomColors"
+              class="color-picker-input" 
+              title="Custom Text Color"
+            />
+            <button 
+              v-for="text in ['#1e293b', '#1c1917', '#064e3b', '#0c4a6e', '#581c87']" 
+              :key="text" 
+              @click="selectPresetText(text)"
+              class="preset-dot text-preset"
+              :style="{ backgroundColor: text }"
+              :class="{ active: store.customTextColor === text }"
+              title="Select preset text color"
+            ></button>
+          </div>
         </div>
-        
-        <div class="sub-divider"></div>
-        
-        <div class="toolbar-group colors-group">
-          <span class="label-txt">Text:</span>
-          <input 
-            type="color" 
-            v-model="customText" 
-            @input="updateCustomColors"
-            class="color-picker-input" 
-            title="Custom Text Color"
-          />
-          <button 
-            v-for="text in ['#1e293b', '#1c1917', '#064e3b', '#0c4a6e', '#581c87']" 
-            :key="text" 
-            @click="selectPresetText(text)"
-            class="preset-dot text-preset"
-            :style="{ backgroundColor: text }"
-            :class="{ active: store.customTextColor === text }"
-            title="Select preset text color"
-          ></button>
+
+        <!-- Sub-toolbar for Ruler & Focus Mask -->
+        <div v-if="store.showRuler" class="ruler-sub-toolbar">
+          <div class="toolbar-group">
+            <button 
+              @click="store.toggleFocusMask" 
+              :class="{ active: store.useFocusMask }" 
+              title="Focus Mask dims surroundings"
+              class="mask-btn"
+            >
+              <EyeOff :size="16" />
+              <span>Focus Mask</span>
+            </button>
+          </div>
+          
+          <div class="sub-divider"></div>
+          
+          <div class="toolbar-group slider-group">
+            <span class="label-txt">Height</span>
+            <button @click="store.adjustRulerHeight(-10)" class="adjust-mini-btn" title="Decrease Height"><Minus :size="12" /></button>
+            <span class="value-txt">{{ store.rulerHeight }}px</span>
+            <button @click="store.adjustRulerHeight(10)" class="adjust-mini-btn" title="Increase Height"><Plus :size="12" /></button>
+          </div>
+
+          <div class="sub-divider"></div>
+
+          <div class="toolbar-group slider-group">
+            <span class="label-txt">Opacity</span>
+            <button @click="store.adjustRulerOpacity(-0.05)" class="adjust-mini-btn" title="Decrease Opacity"><Minus :size="12" /></button>
+            <span class="value-txt">{{ Math.round(store.rulerOpacity * 100) }}%</span>
+            <button @click="store.adjustRulerOpacity(0.05)" class="adjust-mini-btn" title="Increase Opacity"><Plus :size="12" /></button>
+          </div>
+
+          <div class="sub-divider"></div>
+
+          <div class="toolbar-group colors-group">
+            <button 
+              v-for="color in ['#6366f1', '#f43f5e', '#eab308', '#10b981', '#0ea5e9']" 
+              :key="color" 
+              @click="store.setRulerColor(color)"
+              class="color-dot"
+              :style="{ backgroundColor: color }"
+              :class="{ active: store.rulerColor === color }"
+              :title="`Set ruler color to ${color}`"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Main Toolbar Bar -->
+        <div class="accessibility-toolbar">
+          <!-- Font Family Controls -->
+          <div class="toolbar-group font-selectors">
+            <button 
+              @click="store.setFontFamily('outfit')" 
+              :class="{ active: store.fontFamily === 'outfit' }"
+              class="font-btn"
+              title="Default Sans-Serif Font"
+            >
+              Default
+            </button>
+            <button 
+              @click="store.setFontFamily('opendyslexic')" 
+              :class="{ active: store.fontFamily === 'opendyslexic' }"
+              class="font-btn"
+              title="OpenDyslexic Font"
+            >
+              Dyslexic
+            </button>
+            <button 
+              @click="store.setFontFamily('comic')" 
+              :class="{ active: store.fontFamily === 'comic' }"
+              class="font-btn"
+              title="Comic Readable Font"
+            >
+              Comic
+            </button>
+            <button 
+              @click="store.setFontFamily('lexend')" 
+              :class="{ active: store.fontFamily === 'lexend' }"
+              class="font-btn"
+              title="Lexend Fluency Font"
+            >
+              Lexend
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Spacing & Sizing Adjusters -->
+          <div class="toolbar-group adjusters-group">
+            <div class="control-item" title="Adjust Font Size">
+              <span class="control-icon-label"><Type :size="16" /></span>
+              <button @click="store.adjustFontSize(-2)" class="adjust-btn"><Minus :size="12" /></button>
+              <span class="control-value">{{ store.fontSize }}px</span>
+              <button @click="store.adjustFontSize(2)" class="adjust-btn"><Plus :size="12" /></button>
+            </div>
+
+            <div class="vertical-subdivider"></div>
+
+            <div class="control-item" title="Adjust Word Spacing">
+              <span class="control-icon-label"><Space :size="16" /></span>
+              <button @click="store.adjustSpacing('word', -2)" class="adjust-btn"><Minus :size="12" /></button>
+              <span class="control-value">{{ store.wordSpacing }}px</span>
+              <button @click="store.adjustSpacing('word', 2)" class="adjust-btn"><Plus :size="12" /></button>
+            </div>
+
+            <div class="vertical-subdivider"></div>
+
+            <div class="control-item" title="Adjust Line Height">
+              <span class="control-icon-label"><AlignJustify :size="16" /></span>
+              <button @click="store.adjustLineHeight(-0.2)" class="adjust-btn"><Minus :size="12" /></button>
+              <span class="control-value">{{ store.lineHeight }}x</span>
+              <button @click="store.adjustLineHeight(0.2)" class="adjust-btn"><Plus :size="12" /></button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Theme Presets -->
+          <div class="toolbar-group theme-group">
+            <button @click="store.setTheme('default')" :class="{ active: store.theme === 'default' }" class="theme-btn default-theme" title="Light Theme">
+              <Sun :size="18" />
+            </button>
+            <button @click="store.setTheme('cream')" :class="{ active: store.theme === 'cream' }" class="theme-btn cream-theme" title="Cream Theme">
+              <Coffee :size="18" />
+            </button>
+            <button @click="store.setTheme('sky')" :class="{ active: store.theme === 'sky' }" class="theme-btn sky-theme" title="Sky Theme">
+              <Cloud :size="18" />
+            </button>
+            <button @click="store.setTheme('dark')" :class="{ active: store.theme === 'dark' }" class="theme-btn dark-theme" title="Dark Theme">
+              <Moon :size="18" />
+            </button>
+            <button @click="store.setTheme('custom')" :class="{ active: store.theme === 'custom' }" class="theme-btn custom-theme-btn" title="Custom Filter Theme">
+              <Palette :size="18" />
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Feature Toggles -->
+          <div class="toolbar-group toggles-group">
+            <button @click="store.toggleBionicReading" :class="{ active: store.bionicReading }" title="Bionic Reading Mode" class="icon-toggle-btn">
+              <Eye :size="18" />
+              <span>Bionic</span>
+            </button>
+            <button @click="store.toggleRuler" :class="{ active: store.showRuler }" title="Reading Ruler and Focus Mask" class="icon-toggle-btn">
+              <Ruler :size="18" />
+              <span>Ruler</span>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Collapse / Minimize Button -->
+          <button @click="isCollapsed = true" class="collapse-btn" title="Hide/Minimize Toolbar">
+            <X :size="16" />
+            <span>Minimize</span>
+          </button>
         </div>
       </div>
     </Transition>
-
-    <!-- Sliding Ruler Customizer Sub-toolbar -->
-    <Transition name="slide-up">
-      <div v-if="store.showRuler" class="ruler-sub-toolbar">
-        <div class="toolbar-group">
-          <button 
-            @click="store.toggleFocusMask" 
-            :class="{ active: store.useFocusMask }" 
-            title="Focus Mask dims surroundings"
-            class="mask-btn"
-          >
-            <EyeOff :size="16" />
-            <span>Focus Mask</span>
-          </button>
-        </div>
-        
-        <div class="sub-divider"></div>
-        
-        <div class="toolbar-group slider-group">
-          <span class="label-txt">Height</span>
-          <button @click="store.adjustRulerHeight(-10)" class="adjust-mini-btn" title="Decrease Height"><Minus :size="12" /></button>
-          <span class="value-txt">{{ store.rulerHeight }}px</span>
-          <button @click="store.adjustRulerHeight(10)" class="adjust-mini-btn" title="Increase Height"><Plus :size="12" /></button>
-        </div>
-
-        <div class="sub-divider"></div>
-
-        <div class="toolbar-group slider-group">
-          <span class="label-txt">Opacity</span>
-          <button @click="store.adjustRulerOpacity(-0.05)" class="adjust-mini-btn" title="Decrease Opacity"><Minus :size="12" /></button>
-          <span class="value-txt">{{ Math.round(store.rulerOpacity * 100) }}%</span>
-          <button @click="store.adjustRulerOpacity(0.05)" class="adjust-mini-btn" title="Increase Opacity"><Plus :size="12" /></button>
-        </div>
-
-        <div class="sub-divider"></div>
-
-        <!-- Color Options -->
-        <div class="toolbar-group colors-group">
-          <button 
-            v-for="color in ['#6366f1', '#f43f5e', '#eab308', '#10b981', '#0ea5e9']" 
-            :key="color" 
-            @click="store.setRulerColor(color)"
-            class="color-dot"
-            :style="{ backgroundColor: color }"
-            :class="{ active: store.rulerColor === color }"
-            :title="`Set ruler color to ${color}`"
-          ></button>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Main Toolbar -->
-    <div class="accessibility-toolbar">
-      <!-- Font Family Controls -->
-      <div class="toolbar-group font-selectors">
-        <button 
-          @click="store.setFontFamily('outfit')" 
-          :class="{ active: store.fontFamily === 'outfit' }"
-          class="font-btn"
-          title="Default Sans-Serif Font"
-        >
-          Default
-        </button>
-        <button 
-          @click="store.setFontFamily('opendyslexic')" 
-          :class="{ active: store.fontFamily === 'opendyslexic' }"
-          class="font-btn"
-          title="OpenDyslexic Font"
-        >
-          Dyslexic
-        </button>
-        <button 
-          @click="store.setFontFamily('comic')" 
-          :class="{ active: store.fontFamily === 'comic' }"
-          class="font-btn"
-          title="Comic Readable Font"
-        >
-          Comic
-        </button>
-        <button 
-          @click="store.setFontFamily('lexend')" 
-          :class="{ active: store.fontFamily === 'lexend' }"
-          class="font-btn"
-          title="Lexend Fluency Font"
-        >
-          Lexend
-        </button>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Spacing and Sizing Adjusters -->
-      <div class="toolbar-group adjusters-group">
-        <!-- Font Size -->
-        <div class="control-item" title="Adjust Font Size">
-          <span class="control-icon-label"><Type :size="16" /></span>
-          <button @click="store.adjustFontSize(-2)" class="adjust-btn"><Minus :size="12" /></button>
-          <span class="control-value">{{ store.fontSize }}px</span>
-          <button @click="store.adjustFontSize(2)" class="adjust-btn"><Plus :size="12" /></button>
-        </div>
-
-        <div class="vertical-subdivider"></div>
-
-        <!-- Word Spacing -->
-        <div class="control-item" title="Adjust Word Spacing">
-          <span class="control-icon-label"><Space :size="16" /></span>
-          <button @click="store.adjustSpacing('word', -2)" class="adjust-btn"><Minus :size="12" /></button>
-          <span class="control-value">{{ store.wordSpacing }}px</span>
-          <button @click="store.adjustSpacing('word', 2)" class="adjust-btn"><Plus :size="12" /></button>
-        </div>
-
-        <div class="vertical-subdivider"></div>
-
-        <!-- Line Height -->
-        <div class="control-item" title="Adjust Line Height">
-          <span class="control-icon-label"><AlignJustify :size="16" /></span>
-          <button @click="store.adjustLineHeight(-0.2)" class="adjust-btn"><Minus :size="12" /></button>
-          <span class="control-value">{{ store.lineHeight }}x</span>
-          <button @click="store.adjustLineHeight(0.2)" class="adjust-btn"><Plus :size="12" /></button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Themes -->
-      <div class="toolbar-group theme-group">
-        <button @click="store.setTheme('default')" :class="{ active: store.theme === 'default' }" class="theme-btn default-theme" title="Light Theme">
-          <Sun :size="18" />
-        </button>
-        <button @click="store.setTheme('cream')" :class="{ active: store.theme === 'cream' }" class="theme-btn cream-theme" title="Cream Theme">
-          <Coffee :size="18" />
-        </button>
-        <button @click="store.setTheme('sky')" :class="{ active: store.theme === 'sky' }" class="theme-btn sky-theme" title="Sky Theme">
-          <Cloud :size="18" />
-        </button>
-        <button @click="store.setTheme('dark')" :class="{ active: store.theme === 'dark' }" class="theme-btn dark-theme" title="Dark Theme">
-          <Moon :size="18" />
-        </button>
-        <button @click="store.setTheme('custom')" :class="{ active: store.theme === 'custom' }" class="theme-btn custom-theme-btn" title="Custom Filter Theme">
-          <Palette :size="18" />
-        </button>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Toggles (Ruler & Bionic Reading) -->
-      <div class="toolbar-group toggles-group">
-        <button @click="store.toggleBionicReading" :class="{ active: store.bionicReading }" title="Bionic Reading Mode" class="icon-toggle-btn">
-          <Eye :size="18" />
-          <span>Bionic</span>
-        </button>
-        <template v-if="auth.isAuthenticated">
-          <button @click="handleLogout" class="icon-toggle-btn" title="Logout">
-            <LogOut :size="18" />
-            <span>Logout</span>
-          </button>
-        </template>
-        <button @click="store.toggleRuler" :class="{ active: store.showRuler }" title="Reading Ruler and Focus Mask" class="icon-toggle-btn">
-          <Ruler :size="18" />
-          <span>Ruler</span>
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
-.toolbar-wrapper {
+.accessibility-widget-wrapper {
   position: fixed;
-  bottom: 2rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 2000;
+}
+
+/* Floating Trigger Button */
+.floating-widget-trigger {
+  background: var(--primary-color, #6366f1);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-widget-trigger:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+}
+
+/* Toolbar Panel Container */
+.toolbar-container {
+  position: fixed;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 2000;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  pointer-events: none; /* Let clicks pass through outside of containers */
+  max-width: 95vw;
 }
 
 .accessibility-toolbar, .ruler-sub-toolbar {
-  pointer-events: auto; /* Re-enable clicks */
   background: var(--toolbar-bg);
   backdrop-filter: blur(16px);
   padding: 0.6rem 1.25rem;
@@ -291,14 +327,15 @@ watch(() => store.customTextColor, (newTxt) => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .ruler-sub-toolbar {
   padding: 0.4rem 1.25rem;
-  border-radius: 100px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   font-size: 0.85rem;
 }
@@ -348,6 +385,19 @@ button:hover {
 
 button.active {
   background: var(--primary-color);
+  color: white;
+}
+
+.collapse-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  border-radius: 50px;
+}
+
+.collapse-btn:hover {
+  background: #ef4444;
   color: white;
 }
 
@@ -506,15 +556,20 @@ button.active {
   box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
 }
 
-/* Slide Up Transition */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+/* Transitions */
+.fade-pop-enter-active, .fade-pop-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fade-pop-enter-from, .fade-pop-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
 }
 
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(15px);
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translate(-50%, 20px);
   opacity: 0;
 }
 </style>
