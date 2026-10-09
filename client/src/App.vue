@@ -71,7 +71,7 @@ const handleLogout = () => {
 
     <!-- Global Floating Overlays -->
     <ReadingRuler />
-    <AccessibilityToolbar v-if="auth.isAuthenticated" />
+    <AccessibilityToolbar v-if="auth.isAuthenticated && store.disability" />
     <WordInspector />
   </div>
 </template>
