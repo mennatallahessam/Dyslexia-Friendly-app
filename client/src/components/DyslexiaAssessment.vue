@@ -284,7 +284,7 @@ const analyzeHandwriting = () => {
       </div>
       
       <div class="inputs-grid">
-        <div v-for="(input, index) in dictationInputs" :key="index" class="input-group">
+        <div v-for="(_, index) in dictationInputs" :key="index" class="input-group">
           <label>Word {{ index + 1 }}</label>
           <input 
             type="text" 
