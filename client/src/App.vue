@@ -26,6 +26,24 @@ const handleLogout = () => {
   auth.logout();
   router.replace('/login');
 };
+
+const navConfig: Record<string, { name: string; path: string }[]> = {
+  dyslexia: [
+    { name: 'Dashboard', path: '/dyslexia' },
+    { name: 'Reader', path: '/reader' },
+    { name: 'Phonics Games', path: '/phonics' },
+    { name: 'PDF Reader', path: '/pdf' },
+  ],
+  dyscalculia: [
+    { name: 'Dashboard', path: '/dyscalculia' },
+    { name: 'Math Tools', path: '/math-tools' },
+  ],
+  dysgraphia: [
+    { name: 'Dashboard', path: '/dysgraphia' },
+    { name: 'Writing Studio', path: '/dysgraphia/writing-assistant' },
+    { name: 'Handwriting & Tracing', path: '/dysgraphia/handwriting-canvas' },
+  ],
+};
 </script>
 
 <template>
@@ -38,22 +56,15 @@ const handleLogout = () => {
           <span>InclusivePortal</span>
         </router-link>
         
-        <nav v-if="store.disability" class="nav-links">
-          <template v-if="store.disability === 'dyslexia'">
-            <router-link to="/dyslexia" class="nav-item">Dashboard</router-link>
-            <router-link to="/reader" class="nav-item">Reader</router-link>
-            <router-link to="/phonics" class="nav-item">Phonics Games</router-link>
-            <router-link to="/pdf" class="nav-item">PDF Reader</router-link>
-          </template>
-          <template v-else-if="store.disability === 'dyscalculia'">
-            <router-link to="/dyscalculia" class="nav-item">Dashboard</router-link>
-            <router-link to="/math-tools" class="nav-item">Math Tools</router-link>
-          </template>
-          <template v-else-if="store.disability === 'dysgraphia'">
-            <router-link to="/dysgraphia" class="nav-item">Dashboard</router-link>
-            <router-link to="/dysgraphia/writing-assistant" class="nav-item">Writing Studio</router-link>
-            <router-link to="/dysgraphia/handwriting-canvas" class="nav-item">Handwriting & Tracing</router-link>
-          </template>
+        <nav v-if="store.disability && navConfig[store.disability]" class="nav-links">
+          <router-link 
+            v-for="link in navConfig[store.disability]" 
+            :key="link.path" 
+            :to="link.path" 
+            class="nav-item"
+          >
+            {{ link.name }}
+          </router-link>
         </nav>
         
         <div class="user-controls">
