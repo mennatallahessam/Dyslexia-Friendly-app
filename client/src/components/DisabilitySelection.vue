@@ -28,8 +28,7 @@ const store = useSettingsStore();
 function choose(dis: 'dyslexia' | 'dyscalculia' | 'dysgraphia') {
   store.setDisability(dis);
   if (dis === 'dyslexia') {
-    store.setActiveTab('reader');
-    router.push('/reader');
+    router.push('/dyslexia');
   } else if (dis === 'dyscalculia') {
     router.push('/dyscalculia');
   } else if (dis === 'dysgraphia') {

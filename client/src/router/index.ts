@@ -17,6 +17,10 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/pdf', component: PdfReader },
   { path: '/reader', component: () => import('@/components/Reader.vue') },
   
+  // Dyslexia core toolkit routes
+  { path: '/dyslexia', component: () => import('@/components/DyslexiaDashboard.vue') },
+  { path: '/dyslexia/assessment', component: () => import('@/components/DyslexiaAssessment.vue') },
+  
   // Dyscalculia core toolkit routes
   { path: '/dyscalculia', component: () => import('@/components/DyscalculiaDashboard.vue') },
   { path: '/dyscalculia/number-pad', component: () => import('@/components/NumberPad.vue') },
