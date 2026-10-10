@@ -40,6 +40,7 @@ const handleLogout = () => {
         
         <nav v-if="store.disability" class="nav-links">
           <template v-if="store.disability === 'dyslexia'">
+            <router-link to="/dyslexia" class="nav-item">Dashboard</router-link>
             <router-link to="/reader" class="nav-item">Reader</router-link>
             <router-link to="/phonics" class="nav-item">Phonics Games</router-link>
             <router-link to="/pdf" class="nav-item">PDF Reader</router-link>
