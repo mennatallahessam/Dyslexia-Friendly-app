@@ -1,194 +1,200 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/settings';
-import {
-  PenTool,
-  Edit3,
-  BookOpen
-} from 'lucide-vue-next';
+import { PenTool, Edit3, BookOpen, ArrowRight } from 'lucide-vue-next';
 
 const store = useSettingsStore();
 
-const categories = [
+const stats = [
+  { label: 'Tools Available', value: '3' },
+  { label: 'Tracing Guides', value: '26+' },
+  { label: 'Paper Styles', value: '3' },
+];
+
+const tools = [
   {
-    name: 'Assistive Writing & Speech Tools',
-    description: 'Tools to bypass handwriting fatigue with voice typing, text-to-speech, and composition aids.',
-    tools: [
-      {
-        name: 'Dysgraphia Writing Studio',
-        description: 'Voice dictation, predictive sentence builders, audio playback, and custom text spacing.',
-        route: '/dysgraphia/writing-assistant',
-        icon: Edit3,
-        color: 'emerald'
-      },
-      {
-        name: 'Phonics & Letter Builder',
-        description: 'Practice building words, letter ordering, and spelling without physical handwriting.',
-        route: '/phonics',
-        icon: BookOpen,
-        color: 'purple'
-      }
-    ]
+    name: 'Dysgraphia Writing Studio',
+    description: 'Voice dictation, predictive sentence builders, audio playback, and custom text spacing.',
+    route: '/dysgraphia/writing-assistant',
+    icon: Edit3,
+    gradient: 'linear-gradient(135deg, #34d399, #059669)',
+    glow: 'rgba(52,211,153,0.3)',
+    tag: 'Voice & Text',
   },
   {
-    name: 'Handwriting & Fine Motor Skills',
-    description: 'Interactive canvas exercises to practice letter, number, and stroke formation.',
-    tools: [
-      {
-        name: 'Handwriting & Tracing Studio',
-        description: 'Draw on ruled or grid paper overlays with letter/number tracing guides.',
-        route: '/dysgraphia/handwriting-canvas',
-        icon: PenTool,
-        color: 'sky'
-      }
-    ]
-  }
+    name: 'Phonics & Letter Builder',
+    description: 'Practice building words, letter ordering, and spelling without physical handwriting.',
+    route: '/phonics',
+    icon: BookOpen,
+    gradient: 'linear-gradient(135deg, #c084fc, #9333ea)',
+    glow: 'rgba(192,132,252,0.3)',
+    tag: 'Practice',
+  },
+  {
+    name: 'Handwriting & Tracing Studio',
+    description: 'Draw on ruled or grid paper overlays with letter, number, and pattern tracing guides.',
+    route: '/dysgraphia/handwriting-canvas',
+    icon: PenTool,
+    gradient: 'linear-gradient(135deg, #38bdf8, #0284c7)',
+    glow: 'rgba(56,189,248,0.3)',
+    tag: 'Fine Motor',
+  },
 ];
 </script>
 
 <template>
-  <div class="dysgraphia-dashboard container" :class="`font-${store.fontFamily}`">
-    <div class="welcome-banner fade-in">
-      <h2>Dysgraphia Assistive Toolkit</h2>
-      <p>Specialized tools to support writing, fine motor control, voice dictation, and letter formation.</p>
+  <div class="dashboard container" :class="`font-${store.fontFamily}`">
+    <!-- Hero Banner -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-label">Dysgraphia Profile</div>
+        <h2>Your Writing Toolkit</h2>
+        <p>Assistive tools for writing, fine motor control, voice dictation, and letter formation exercises.</p>
+        <div class="stat-row">
+          <div v-for="stat in stats" :key="stat.label" class="stat-chip">
+            <span class="stat-val">{{ stat.value }}</span>
+            <span class="stat-lbl">{{ stat.label }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="orbit orbit-1"></div>
+        <div class="orbit orbit-2"></div>
+        <div class="hero-icon-center">
+          <PenTool :size="42" />
+        </div>
+      </div>
     </div>
 
-    <div v-for="category in categories" :key="category.name" class="category-section">
-      <div class="category-header">
-        <h3>{{ category.name }}</h3>
-        <p class="category-desc">{{ category.description }}</p>
-      </div>
+    <div class="section-header">
+      <h3>All Tools</h3>
+      <span class="section-line"></span>
+    </div>
 
-      <div class="tools-grid">
-        <router-link 
-          v-for="tool in category.tools" 
-          :key="tool.name" 
-          :to="tool.route" 
-          class="tool-card"
-          :class="tool.color"
-        >
-          <div class="card-icon-wrapper">
-            <component :is="tool.icon" :size="32" class="tool-icon" />
+    <div class="tools-grid">
+      <router-link
+        v-for="tool in tools"
+        :key="tool.name"
+        :to="tool.route"
+        class="tool-card"
+        :style="{ '--glow': tool.glow }"
+      >
+        <div class="card-top">
+          <div class="tool-icon-wrap" :style="{ background: tool.gradient }">
+            <component :is="tool.icon" :size="28" />
           </div>
-          <div class="card-details">
-            <h4>{{ tool.name }}</h4>
-            <p>{{ tool.description }}</p>
-          </div>
-        </router-link>
-      </div>
+          <span class="tool-tag">{{ tool.tag }}</span>
+        </div>
+        <h4>{{ tool.name }}</h4>
+        <p>{{ tool.description }}</p>
+        <div class="card-cta">
+          Open tool <ArrowRight :size="16" />
+        </div>
+      </router-link>
     </div>
   </div>
 </template>
 
 <style scoped>
-.dysgraphia-dashboard {
-  padding-bottom: 8rem;
-}
+.dashboard { padding: 0 0 8rem; }
 
-.welcome-banner {
-  text-align: center;
-  margin: 2rem 0 3rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
-  border-radius: 24px;
-  border: 1px solid rgba(16, 185, 129, 0.15);
-}
-
-.welcome-banner h2 {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #10b981, #3b82f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.welcome-banner p {
-  opacity: 0.8;
-  font-size: 1.1rem;
-}
-
-.category-section {
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  background: linear-gradient(135deg, #022c22 0%, #065f46 50%, #0c4a6e 100%);
+  border-radius: 28px;
+  padding: 3rem;
   margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.category-header {
-  margin-bottom: 1.5rem;
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-.category-header h3 {
-  font-size: 1.4rem;
-  margin-bottom: 0.25rem;
-  color: var(--text-color);
+.hero-inner { position: relative; z-index: 2; flex: 1; color: white; }
+
+.hero-label {
+  display: inline-block;
+  background: rgba(52,211,153,0.25);
+  border: 1px solid rgba(110,231,183,0.3);
+  color: #a7f3d0;
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.3rem 0.9rem; border-radius: 50px; margin-bottom: 1rem;
 }
 
-.category-desc {
-  font-size: 0.95rem;
-  opacity: 0.6;
-}
+.hero-inner h2 { font-size: 2.4rem; font-weight: 800; margin: 0 0 0.75rem; line-height: 1.2; }
+.hero-inner p { color: rgba(255,255,255,0.65); font-size: 1rem; line-height: 1.6; max-width: 420px; margin: 0 0 2rem; }
 
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+.stat-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.stat-chip {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 0.6rem 1.2rem;
+  display: flex; flex-direction: column; align-items: center;
 }
+.stat-val { font-size: 1.4rem; font-weight: 800; color: white; }
+.stat-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.hero-visual { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+.hero-icon-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 72px; height: 72px;
+  background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 20px;
+  display: flex; align-items: center; justify-content: center; color: white; z-index: 2;
+}
+.orbit {
+  position: absolute; top: 50%; left: 50%;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 50%;
+  animation: spin 10s linear infinite;
+}
+.orbit-1 { width: 130px; height: 130px; margin: -65px 0 0 -65px; }
+.orbit-2 { width: 180px; height: 180px; margin: -90px 0 0 -90px; animation-duration: 16s; animation-direction: reverse; border-style: dashed; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.section-header h3 { font-size: 1.1rem; font-weight: 700; white-space: nowrap; color: var(--text-color); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.08em; }
+.section-line { flex: 1; height: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
+.theme-dark .section-line { background: linear-gradient(to right, rgba(255,255,255,0.08), transparent); }
+
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
 
 .tool-card {
-  display: flex;
-  gap: 1.25rem;
-  padding: 1.5rem;
-  background: var(--card-bg);
-  border-radius: 20px;
-  text-decoration: none;
-  color: var(--text-color);
-  border: 1px solid rgba(0,0,0,0.04);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  align-items: center;
+  background: var(--card-bg); border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 20px; padding: 1.75rem; text-decoration: none;
+  color: var(--text-color); display: flex; flex-direction: column; gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden;
 }
-
-.theme-dark .tool-card {
-  border-color: rgba(255,255,255,0.04);
+.theme-dark .tool-card { border-color: rgba(255,255,255,0.05); }
+.tool-card::before {
+  content: ''; position: absolute; top: -60%; left: -60%; width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 30%, var(--glow, rgba(52,211,153,0.12)), transparent 60%);
+  opacity: 0; transition: opacity 0.4s ease;
 }
+.tool-card:hover::before { opacity: 1; }
+.tool-card:hover { transform: translateY(-6px); border-color: rgba(52,211,153,0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(52,211,153,0.15); }
 
-.tool-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-  border-color: #10b981;
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.tool-icon-wrap {
+  width: 54px; height: 54px; border-radius: 16px; display: flex;
+  align-items: center; justify-content: center; color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.3s ease;
 }
+.tool-card:hover .tool-icon-wrap { transform: scale(1.1) rotate(-5deg); }
 
-.card-icon-wrapper {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
+.tool-tag {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #34d399; background: rgba(52,211,153,0.1); padding: 0.3rem 0.75rem; border-radius: 50px;
 }
-
-.tool-card:hover .card-icon-wrapper {
-  transform: scale(1.1);
-}
-
-.tool-icon {
-  color: white;
-}
-
-.card-details h4 {
-  font-size: 1.15rem;
-  margin: 0 0 0.35rem 0;
-  font-weight: 700;
-}
-
-.card-details p {
-  font-size: 0.85rem;
-  opacity: 0.7;
-  margin: 0;
-  line-height: 1.35;
-}
-
-/* Color Presets */
-.emerald .card-icon-wrapper { background: linear-gradient(135deg, #34d399, #059669); }
-.purple .card-icon-wrapper { background: linear-gradient(135deg, #c084fc, #9333ea); }
-.sky .card-icon-wrapper { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+.tool-card h4 { font-size: 1.2rem; font-weight: 700; margin: 0; }
+.tool-card p { font-size: 0.88rem; opacity: 0.6; line-height: 1.5; margin: 0; flex: 1; }
+.card-cta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: #34d399; margin-top: 0.5rem; transition: gap 0.2s; }
+.tool-card:hover .card-cta { gap: 0.7rem; }
 </style>
